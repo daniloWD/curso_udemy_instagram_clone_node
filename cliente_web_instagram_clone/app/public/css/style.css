@@ -28,6 +28,10 @@ body{
 	background: #fff;
 }
 
+img{
+	cursor: pointer;
+}
+
 .logo2{
 	padding-left:50px;
 }

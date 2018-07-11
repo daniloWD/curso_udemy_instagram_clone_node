@@ -11,12 +11,6 @@ consign = require('consign');
 
 var app = express();
 
-consign()
-    .include('app/routes')
-    .then('config/dbConnection.js')
-    .then('app/models')
-    .then('app/controllers')
-    .into(app);
 
 
 
@@ -26,14 +20,20 @@ app.use(multiParty());
 app.use(cors());
 
 app.use(function (req, res, next) {
-res.setHeader("Acess-Control-Allow-Origin", "*");
-res.setHeader("Acess-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-res.setHeader("Acess-Control-Allow-Headers", "content-type");
-res.setHeader("Acess-Control-Allow-Credentials", true);
-
-next();
+    res.setHeader("Acess-Control-Allow-Origin", "*");
+    res.setHeader("Acess-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.setHeader("Acess-Control-Allow-Headers", "content-type");
+    res.setHeader("Acess-Control-Allow-Credentials", true);
+    
+    next();
 });
 
+consign()
+    .include('app/routes')
+    .then('config/dbConnection.js')
+    .then('app/models')
+    .then('app/controllers')
+    .into(app);
 
 var connection = app.config.dbConnection();
 
@@ -45,22 +45,22 @@ res.send({
 });
 
 app.route('/api')
-.get(function (req, res) {
+// .get(function (req, res) {
 
-    connection.open(function (err, mongoclient) {
-        mongoclient.collection('postagens', function (err, collection) {
-            collection.find().toArray(function (err, results) {
-                if (err) {
-                    res.json(err);
-                } else {
-                    res.json(results);
-                }
-                mongoclient.close();
-            });
-        });
-    });
+//     connection.open(function (err, mongoclient) {
+//         mongoclient.collection('postagens', function (err, collection) {
+//             collection.find().toArray(function (err, results) {
+//                 if (err) {
+//                     res.json(err);
+//                 } else {
+//                     res.json(results);
+//                 }
+//                 mongoclient.close();
+//             });
+//         });
+//     });
 
-})
+// })
 .post(function (req, res) {
 
     // res.setHeader("Access-Control-Allow-Origin", "*");
@@ -87,7 +87,7 @@ app.route('/api')
             titulo: req.body.titulo
         }
 
-        db.open(function (err, mongoclient) {
+        connection.open(function (err, mongoclient) {
             mongoclient.collection('postagens', function (err, collection) {
                 collection.insert(dados, function (err, records) {
                     if (err) {
@@ -106,29 +106,29 @@ app.route('/api')
     });
 });
 
-app.route('/imagens/:imagem')
-.get(function (req, res) {
-    var img = req.params.imagem;
+// app.route('/imagens/:imagem')
+// .get(function (req, res) {
+//     var img = req.params.imagem;
 
-    fs.readFile('./uploads/' + img, function (err, content) {
-        if (err) {
-            res.status(400).json(err);
-            return;
-        }
+//     fs.readFile('./uploads/' + img, function (err, content) {
+//         if (err) {
+//             res.status(400).json(err);
+//             return;
+//         }
 
-        res.writeHead(200, {
-            'content-type': 'image/jpg'
-        });
-        res.end(content);
-    });
+//         res.writeHead(200, {
+//             'content-type': 'image/jpg'
+//         });
+//         res.end(content);
+//     });
 
-});
+// });
 
 
 app.route('/api/:id')
 // Get by ID(ready)
 .get(function (req, res) {
-    db.open(function (err, mongoclient) {
+    connection.open(function (err, mongoclient) {
         mongoclient.collection('postagens', function (err, collection) {
             collection.find(ObjectID(req.params.id)).toArray(function (err, results) {
                 if (err) {
@@ -144,67 +144,67 @@ app.route('/api/:id')
     });
 })
 // Put by ID(update)
-.put(function (req, res) {
-    db.open(function (err, mongoclient) {
-        mongoclient.collection('postagens', function (err, collection) {
-            collection.update({
-                    _id: ObjectID(req.params.id)
-                }, {
-                    $push: {
-                        comentarios: {
-                            id_comentario: new ObjectID(),
-                            comentario: req.body.comentario
-                        }
-                    }
-                }, {},
+// .put(function (req, res) {
+//     connection.open(function (err, mongoclient) {
+//         mongoclient.collection('postagens', function (err, collection) {
+//             collection.update({
+//                     _id: ObjectID(req.params.id)
+//                 }, {
+//                     $push: {
+//                         comentarios: {
+//                             id_comentario: new ObjectID(),
+//                             comentario: req.body.comentario
+//                         }
+//                     }
+//                 }, {},
 
-                function (err, records) {
-                    if (err) {
-                        res.json(err);
-                    } else {
-                        res.json(records);
-                    }
-                });
-            mongoclient.close();
+//                 function (err, records) {
+//                     if (err) {
+//                         res.json(err);
+//                     } else {
+//                         res.json(records);
+//                     }
+//                 });
+//             mongoclient.close();
 
-        });
-    });
-})
+//         });
+//     });
+// })
 // Delete by ID(update)
-.delete(function (req, res) {
+// .delete(function (req, res) {
 
 
-    db.open(function (err, mongoclient) {
-        mongoclient.collection('postagens', function (err, collection) {
-            collection.update({}, {
-                    $pull: {
-                        comentarios: {
-                            id_comentario: ObjectID(req.params.id)
-                        }
-                    }
-                },
+//     connection.open(function (err, mongoclient) {
+//         mongoclient.collection('postagens', function (err, collection) {
+//             collection.update({}, {
+//                     $pull: {
+//                         comentarios: {
+//                             id_comentario: ObjectID(req.params.id)
+//                         }
+//                     }
+//                 },
 
-                {
-                    multi: true
-                }
+//                 {
+//                     multi: true
+//                 }
 
-                ,
-
-
-
-                function (err, records) {
-                    if (err) {
-                        res.json(err);
-                    } else {
-                        res.json(records);
-                    }
-
-                    mongoclient.close();
-                });
+//                 ,
 
 
-        });
-    });
-})
+
+//                 function (err, records) {
+//                     if (err) {
+//                         res.json(err);
+//                     } else {
+//                         res.json(records);
+//                     }
+
+//                     mongoclient.close();
+//                 });
+
+
+//         });
+//     });
+// })
 
 module.exports = app;
