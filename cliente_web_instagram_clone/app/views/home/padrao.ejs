@@ -24,7 +24,7 @@
 					xhr.onload = function(){
 						if(xhr.status === 200){
 							var data = $.parseJSON(xhr.responseText);
-							
+							console.log(xhr.responseText);
 							for(i=0;i < data.length;i++){
 								$('#container_timeline').append(
 									'<div class="publicacao">' +
@@ -130,6 +130,8 @@
 					//Fazer envio do nosso request
 					xhr.open("POST", "http://localhost:8080/api");
 					xhr.send(formData);
+
+					window.location.href = '/home'
 				});
 
 			});
@@ -152,10 +154,8 @@
 
 		<div class="container">
 			<div class="col-md-2"></div>
-			<div class="col-md-8" id="container_timeline"></div>
-			
+			<div class="col-md-8" id="container_timeline"></div>			
 		</div>
-
 
 		<div class="container" style="display:none" id="container_form">
 			<div class="panel panel-default">
